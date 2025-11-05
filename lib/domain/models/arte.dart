@@ -5,8 +5,9 @@ class Arte {
   final String descricao;
   final String temas;
   final String curiosidades;
+  late final String? urlImage; 
 
-  Arte({required this.id, required this.autorId, required this.nome, required this.descricao, required this.temas, required this.curiosidades});
+  Arte({required this.id, required this.autorId, required this.nome, required this.descricao, required this.temas, required this.curiosidades, this.urlImage});
 
  // Convert an Arte object to a Map (JSON)
   Map<String, dynamic> toJson() {
@@ -16,7 +17,8 @@ class Arte {
       'nome': nome,
       'descricao': descricao,
       'temas': temas,
-      'curiosidades': curiosidades
+      'curiosidades': curiosidades,
+      'urlImage' : urlImage ?? ''
     };
   }
 
@@ -28,7 +30,8 @@ class Arte {
       nome: json['nome'],
       descricao: json['descricao'],
       temas: json['temas'],
-      curiosidades: json['curiosidades']
+      curiosidades: json['curiosidades'],
+      urlImage: json['urlImage']
     );
   }
 }
