@@ -1,14 +1,14 @@
 class Autor {
   final int id;
-  final String authorName; 
-  final String authorBio;
-  final DateTime lastUpdatedAt;
+  final String? authorName; 
+  final String? authorBio;
+  final DateTime? lastUpdatedAt;
 
   Autor({
     required this.id,
-    required this.authorName,
-    required this.authorBio,
-    required this.lastUpdatedAt,
+    this.authorName,
+    this.authorBio,
+    this.lastUpdatedAt,
   });
 
   // Converter um Autor em JSON
@@ -17,7 +17,7 @@ class Autor {
       'id': id,
       'authorName': authorName,
       'authorBio': authorBio,
-      'lastUpdatedAt': lastUpdatedAt.toIso8601String(),
+      'lastUpdatedAt': lastUpdatedAt?.toIso8601String(),
     };
   }
 
@@ -27,7 +27,7 @@ class Autor {
       id: json['id'],
       authorName: json['authorName'],
       authorBio: json['authorBio'],
-      lastUpdatedAt: DateTime.parse(json['lastUpdatedAt']),
+      lastUpdatedAt: json['lastUpdatedAt'] != null ? DateTime.parse(json['lastUpdatedAt']) : null,
     );
   }
 }

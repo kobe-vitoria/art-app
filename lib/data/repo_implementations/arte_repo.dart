@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:art_app/data/services/api_service.dart';
 import 'package:art_app/data/services/database_service.dart';
 import 'package:art_app/data/services/graphql_service.dart';
@@ -9,7 +11,7 @@ import 'package:sqflite/sqflite.dart';
 class ArteRepo implements ArteRepository {
   @override
   Future<List<Arte>> getAllArteContent() async {
-    final baseUrl = 'https://cdn.contentful.com';
+    final baseUrl = 'https://graphql.contentful.com/content/v1/spaces/vq7mfbsggeis/environments/master?';
     final service = GraphQLService(baseUrl: baseUrl, authToken: 'bd_C3pgX-SGkkIzekWR_pnD4aSErbRFmsVX4TRdKZ14'); //TODO: add to .ENV
     final res = await service.query("""
       query {
@@ -17,7 +19,7 @@ class ArteRepo implements ArteRepository {
           items {
             id
             nome
-            descrio
+            descricao
             temas
             curiosidades
             author {
@@ -31,8 +33,7 @@ class ArteRepo implements ArteRepository {
         }
       }
     """); 
-    final List<Arte> lista = res['arteCollection']['items'] ? res['arteCollection']['items'].map((e) => Arte.fromJson(e)).toList().cast<Arte>() : [];
-
+    final List<Arte> lista = res['arteCollection'] != null ? res['arteCollection']['items'].map((e) => Arte.fromJson(e)).toList().cast<Arte>() : [];
     final listaIds = lista.map((e) => e.id).join(',');
     final imageIdsResponse = await getImageIdsFromArticApi(listaIds);
     for (final item in imageIdsResponse) {
@@ -52,7 +53,7 @@ class ArteRepo implements ArteRepository {
     return res['data'] ?? [];
   }
 
-  String getImageUrlFromArticApi(int id) {
+  String getImageUrlFromArticApi(String id) {
     return 'https://www.artic.edu/iiif/2/$id/full/843,/0/default.jpg';
   }
 

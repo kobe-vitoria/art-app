@@ -1,5 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
+
 
 class DatabaseService {
   static const _databaseName = 'app.db';
@@ -17,6 +19,7 @@ class DatabaseService {
   }
 
   Future<Database> _initDatabase() async {
+    databaseFactory = databaseFactoryFfiWeb;
     final dbPath = await getDatabasesPath();
     final path = p.join(dbPath, _databaseName);
 
