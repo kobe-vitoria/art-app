@@ -1,6 +1,10 @@
+import 'package:art_app/data/services/api_service.dart';
+import 'package:art_app/data/services/database_service.dart';
 import 'package:art_app/data/services/graphql_service.dart';
 import 'package:art_app/domain/models/arte.dart';
+import 'package:art_app/domain/models/autor.dart';
 import 'package:art_app/domain/repositories/arte_repository.dart';
+import 'package:sqflite/sqflite.dart';
 
 class ArteRepo implements ArteRepository {
   @override
@@ -27,20 +31,87 @@ class ArteRepo implements ArteRepository {
         }
       }
     """); 
-    final lista = res['arteCollection']['items'] ? res['arteCollection']['items'].map((e) => Arte.fromJson(e)).toList().cast<Arte>() : [];
+    final List<Arte> lista = res['arteCollection']['items'] ? res['arteCollection']['items'].map((e) => Arte.fromJson(e)).toList().cast<Arte>() : [];
+
+    final listaIds = lista.map((e) => e.id).join(',');
+    final imageIdsResponse = await getImageIdsFromArticApi(listaIds);
+    for (final item in imageIdsResponse) {
+      for (final arte in lista) {
+        if (arte.id == item['id']) {
+          arte.urlImage = getImageUrlFromArticApi(item['image_id']);
+        }
+      }
+    }
     return lista;
   }
 
-  @override
-  Future<List<Arte>> load(Arte arte) {
-    // TODO: implement load
-    throw UnimplementedError();
+  Future<List<dynamic>> getImageIdsFromArticApi(String ids) async {
+    final baseUrl = 'https://api.artic.edu/';
+    final service = ApiService(baseUrl: baseUrl);
+    final res = await service.get('api/v1/artworks?ids=$ids&fields=id,image_id');
+    return res['data'] ?? [];
+  }
+
+  String getImageUrlFromArticApi(int id) {
+    return 'https://www.artic.edu/iiif/2/$id/full/843,/0/default.jpg';
   }
 
   @override
-  Future<void> save(Arte arte) {
-    // TODO: implement save
-    throw UnimplementedError();
+  Future<List<Arte>> load() async {
+  final db = await DatabaseService.instance.database;
+
+  final maps = await db.rawQuery('''
+    SELECT A.*, 
+           AU.id as authorId,
+           AU.authorName,
+           AU.authorBio,
+           AU.lastUpdatedAt
+    FROM Arte A
+    LEFT JOIN Author AU ON A.authorId = AU.id
+  ''');
+
+  return maps.map((json) {
+    final author = Autor(
+      id: json['authorId'] as int,
+      authorName: json['authorName'] as String,
+      authorBio: json['authorBio'] as String,
+      lastUpdatedAt: DateTime.parse(json['lastUpdatedAt'] as String),
+    );
+
+    return Arte(
+      id: json['id'] as int,
+      autor: author,
+      nome: json['nome'] as String,
+      descricao: json['descricao'] as String,
+      temas: json['temas'] as String,
+      curiosidades: json['curiosidades'] as String,
+    );
+  }).toList();
+
+}
+
+
+  @override
+  Future<void> save(Arte arte) async {
+    final db = await DatabaseService.instance.database;
+    final batch = db.batch();
+    if (arte.autor == null) {
+        return;
+    }
+    batch.insert('Arte', arte.toJson(), conflictAlgorithm: ConflictAlgorithm.replace);
+    batch.insert('Author', arte.autor!.toJson(), conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+  
+
+  @override
+  Future<void> delete(Arte arte) async {
+    final db = await DatabaseService.instance.database;
+    final batch = db.batch();
+    if (arte.autor == null) {
+        return;
+    }
+    batch.delete('Arte', where: 'id = ?', whereArgs: [arte.id]);
+    batch.delete('Author', where: 'id = ?',whereArgs: [arte.autor!.id]);
   }
   
 }

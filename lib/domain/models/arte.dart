@@ -15,7 +15,7 @@ class Arte {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'autor': autor?.toJson() ?? '',
+      'autor': autor?.id ?? '',
       'nome': nome,
       'descricao': descricao,
       'temas': temas,

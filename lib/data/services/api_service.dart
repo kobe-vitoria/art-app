@@ -59,7 +59,7 @@ class ApiService {
 
     if (status == 401) {
       throw Exception('Não autorizado (401): token inválido ou expirado.');
-    } else if (status >= 200 && status < 300) {
+    } else if (status >= 200 && status < 300 || status == 304) {
       return response.body.isNotEmpty ? jsonDecode(response.body) : null;
     } else {
       throw Exception(
