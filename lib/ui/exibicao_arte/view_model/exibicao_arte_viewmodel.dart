@@ -14,7 +14,6 @@ class ExibicaoArteViewmodel extends ChangeNotifier {
   Future<void> _carregaConteudo() async {
     final arteRepo = ArteRepo();
     listaArtes = await arteRepo.getAllArteContent();
-    print(jsonEncode(listaArtes));
     notifyListeners();
     if (listaArtes.isNotEmpty) {
       await saveArts(listaArtes, arteRepo);
