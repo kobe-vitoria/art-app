@@ -34,7 +34,6 @@ class ArteRepo implements ArteRepository {
         }
       }
     """);
-    // print(res);
     if (res.runtimeType == String) {
       print('entrou aqui');
       lista = await load();
