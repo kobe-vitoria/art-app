@@ -11,6 +11,7 @@ import 'package:sqflite/sqflite.dart';
 class ArteRepo implements ArteRepository {
   @override
   Future<List<Arte>> getAllArteContent() async {
+    List<Arte> lista = [];
     final baseUrl = 'https://graphql.contentful.com/content/v1/spaces/vq7mfbsggeis/environments/master?';
     final service = GraphQLService(baseUrl: baseUrl, authToken: 'bd_C3pgX-SGkkIzekWR_pnD4aSErbRFmsVX4TRdKZ14'); //TODO: add to .ENV
     final res = await service.query("""
@@ -32,8 +33,15 @@ class ArteRepo implements ArteRepository {
           }
         }
       }
-    """); 
-    final List<Arte> lista = res['arteCollection'] != null ? res['arteCollection']['items'].map((e) => Arte.fromJson(e)).toList().cast<Arte>() : [];
+    """);
+    // print(res);
+    if (res.runtimeType == String) {
+      print('entrou aqui');
+      lista = await load();
+      print(jsonEncode(lista));
+    } else {
+      lista = res['arteCollection'] != null ? res['arteCollection']['items'].map((e) => Arte.fromJson(e)).toList().cast<Arte>() : [];
+    }
     final listaIds = lista.map((e) => e.id).join(',');
     final imageIdsResponse = await getImageIdsFromArticApi(listaIds);
     for (final item in imageIdsResponse) {
@@ -53,8 +61,8 @@ class ArteRepo implements ArteRepository {
     return res['data'] ?? [];
   }
 
-  String getImageUrlFromArticApi(String id) {
-    return 'https://www.artic.edu/iiif/2/$id/full/843,/0/default.jpg';
+  String getImageUrlFromArticApi(String imageId) {
+    return 'https://www.artic.edu/iiif/2/$imageId/full/843,/0/default.jpg';
   }
 
   @override
@@ -76,7 +84,7 @@ class ArteRepo implements ArteRepository {
       id: json['authorId'] as int,
       authorName: json['authorName'] as String,
       authorBio: json['authorBio'] as String,
-      lastUpdatedAt: DateTime.parse(json['lastUpdatedAt'] as String),
+      lastUpdatedAt: json['lastUpdatedAt'] != null ? DateTime.parse(json['lastUpdatedAt'] as String) : DateTime.now(),
     );
 
     return Arte(
@@ -84,11 +92,10 @@ class ArteRepo implements ArteRepository {
       autor: author,
       nome: json['nome'] as String,
       descricao: json['descricao'] as String,
-      temas: json['temas'] as String,
-      curiosidades: json['curiosidades'] as String,
+      temas: json['temas'] != null ? json['temas'] as String : '',
+      curiosidades: json['curiosidades'] != null ? json['curiosidades'] as String : null,
     );
   }).toList();
-
 }
 
 
@@ -99,8 +106,9 @@ class ArteRepo implements ArteRepository {
     if (arte.autor == null) {
         return;
     }
-    batch.insert('Arte', arte.toJson(), conflictAlgorithm: ConflictAlgorithm.replace);
-    batch.insert('Author', arte.autor!.toJson(), conflictAlgorithm: ConflictAlgorithm.replace);
+    batch.insert('Arte', arte.toJson(), conflictAlgorithm: ConflictAlgorithm.ignore);
+    batch.insert('Author', arte.autor!.toJson(), conflictAlgorithm: ConflictAlgorithm.ignore);
+    await batch.commit();
   }
   
 
@@ -113,6 +121,7 @@ class ArteRepo implements ArteRepository {
     }
     batch.delete('Arte', where: 'id = ?', whereArgs: [arte.id]);
     batch.delete('Author', where: 'id = ?',whereArgs: [arte.autor!.id]);
+    await batch.commit();
   }
   
 }

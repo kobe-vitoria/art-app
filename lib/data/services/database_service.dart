@@ -34,7 +34,7 @@ class DatabaseService {
     final batch = db.batch();
     batch.execute('''
       CREATE TABLE Author (
-        id INTEGER,
+        id INTEGER PRIMARY KEY,
         authorName TEXT NOT NULL,
         authorBio TEXT,
         lastUpdatedAt TEXT
@@ -43,7 +43,7 @@ class DatabaseService {
 
     batch.execute('''
       CREATE TABLE Arte (
-        id INTEGER PRIMARY,
+        id INTEGER PRIMARY KEY,
         authorId INTEGER,
         nome TEXT NOT NULL,
         descricao TEXT NOT NULL,
@@ -52,5 +52,7 @@ class DatabaseService {
         FOREIGN KEY(authorId) REFERENCES Author(id)
       )
     ''');
+    await batch.commit();
   }
+
 }

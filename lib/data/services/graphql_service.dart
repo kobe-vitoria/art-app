@@ -34,11 +34,18 @@ class GraphQLService extends ApiService {
   }
 
   dynamic _processGraphQLResponse(http.Response response) {
+    // if (true) {
+    //   final errorMessage = 'API_ERROR_RESPONSE';
+    //   return errorMessage;
+    // } 
+    //Mock p/ forçar erro no contentful
+    
     final body = jsonDecode(response.body);
 
     if (body['errors'] != null) {
-      final errorMessage = body['errors'][0]['message'] ?? 'Erro GraphQL desconhecido';
-      throw Exception('Erro GraphQL: $errorMessage');
+      final errorMessage = 'API_ERROR_RESPONSE';
+      print(body['errors'][0]['message'] ?? ''); //Manter o log do erro/observabilidade
+      return errorMessage;
     }
 
     return body['data'];

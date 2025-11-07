@@ -57,14 +57,9 @@ class ApiService {
   dynamic _processResponse(http.Response response) {
     final status = response.statusCode;
 
-    if (status == 401) {
-      throw Exception('Não autorizado (401): token inválido ou expirado.');
-    } else if (status >= 200 && status < 300 || status == 304) {
+    if (status >= 200 && status < 300 || status == 304) {
       return response.body.isNotEmpty ? jsonDecode(response.body) : null;
-    } else {
-      throw Exception(
-        'Erro na requisição (${response.statusCode}): ${response.body}',
-      );
     }
+    return 'API_ERROR_RESPONSE'; // TODO: criar constantes com tipos variados de erros
   }
 }

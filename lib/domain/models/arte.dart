@@ -15,12 +15,11 @@ class Arte {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'autor': autor?.id ?? '',
-      'nome': nome,
-      'descricao': descricao,
+      'authorId': autor?.id ?? '',
+      'nome': nome ?? '',
+      'descricao': descricao ?? '',
       'temas': temas,
       'curiosidades': curiosidades,
-      'urlImage' : urlImage ?? ''
     };
   }
 
