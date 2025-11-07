@@ -162,6 +162,7 @@ GET https://api.artic.edu/api/v1/artworks?ids={ids}&fields=id,image_id
 - fields: Campos desejados (ex: id,image_id)
 ```
 ## Resposta:
+```
 {
   "data": [
     {
@@ -173,9 +174,8 @@ GET https://api.artic.edu/api/v1/artworks?ids={ids}&fields=id,image_id
 ```
 
 #### Endpoint 2: URL de imagem (IIIF)
-
-**Formato**:
 ```
+**Formato**:
 https://www.artic.edu/iiif/2/{image_id}/full/843,/0/default.jpg
 ```
 
